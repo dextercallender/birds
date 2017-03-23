@@ -24,17 +24,27 @@ void setup(){
     longitudes[i] = row.getFloat("LONGITUDE");
     dates[i] = row.getString("OBSERVATION DATE");
     times[i] = row.getString("TIME OBSERVATIONS STARTED");
-  }
-  
+  } 
 }
+
+int ex = 0;
 
 void draw(){
   background(frameCount % 255);
   time += 0.5;
+  
+  float x = map(latitudes[ex], 36.0, 37.0, 0.0, float(width));   
+  float y = map(longitudes[ex], -122.0, -121.0, 0.0, float(height));
+  ellipse( x, y, 20, 20);
+  
+  ex +=1;
+  
 }
 
 float dateTimeToFloat(){
-  
+  return 0;
 }
+
+
 
 // calculate the centroid over a set span of time

@@ -14,16 +14,23 @@ String[] dates;
 String[] times;
 float[] latitudes;
 float[] longitudes;
+int rowCount;
+
+// Sonification
 
 Minim minim;
 AudioOutput out;
 Oscil wave;
 
+// Visualization
+
+PImage bg;
+
 void setup(){
-  size(1920,1080,P3D);
+  size(1920,1177,P3D);
   background(255);
   table = loadTable("bird_sampleset.csv","header, csv");
-  int rowCount = table.getRowCount();
+  rowCount = table.getRowCount();
   dates = new String[rowCount];
   times = new String[rowCount];
   latitudes = new float[rowCount];
@@ -48,19 +55,29 @@ void setup(){
   // patch the Oscil to the output
   wave.patch( out );
   
+  bg = loadImage("map2.jpg");
+  
 }
 
 int ex = 0;
 
 void draw(){
-  background(frameCount % 255);
+  background(bg);
   time += 0.5;
+  
+  if( ex == rowCount -1 ){
+    exit();
+  }
   
   float x = map(latitudes[ex], 36.0, 37.0, 0.0, float(width));   
   float y = map(longitudes[ex], -122.0, -121.0, 0.0, float(height));
-  ellipse( x, y, 20, 20);
+  fill(255,0,0);
+  ellipse( x, y, 30, 30);
   
   ex +=1;
+  
+  wave.setAmplitude(map(x, 0, width, 1, 0) );
+  wave.setFrequency(map(y, 0, height, 110, 880) );
   
 }
 

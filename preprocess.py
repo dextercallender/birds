@@ -1,18 +1,33 @@
 import numpy as np
 import pandas as pd
-
+import sys
 from datetime import datetime
 
 def main():
 	csv_path = sys.argv[1]
-	# raw_data = csv.reader(open(csv_path), delimiter=',')
-	# timesorted_data = sorted(raw_data, key = lambda row: operator.itemgetter(0)) # index here refers to column number
-	FORMAT_STRING = 'SOMETHING'
-	dateparser = lambda x: pd.datetime.strptime(x, FORMAT_STRING)
-	raw = pd.read_csv(csv_path, parse_dates = {'datetime': ['OBSERVATION DATE', 'TIME OBSERVATIONS STARTED']}, date_parser=dateparser)
-	raw.index = raw['datetime']
-	date_sorted = raw.sort_index()
-	print date_sorted['datetime'][10]
+
+	input_data = pd.read_csv(csv_path)
+	input_data['TIME OBSERVATIONS STARTED'].fillna('00:00:00')
+
+	# represent observations without a count as a 'unit' observation
+	input_data['OBSERVATION COUNT'].replace(to_replace='X', value=1)
+
+	input_data['date_time'] = input_data['OBSERVATION DATE'] + ' ' + input_data['TIME OBSERVATIONS STARTED']
+	# 'datetime' column format looks like this: 2011-01-01 00:00:00
+	input_data['date_time'] = pd.to_datetime(input_data['date_time'], format='%Y-%m-%d %H:%M:%S') #creates array of timestamp objects
+	input_data.index = input_data['date_time']
+	input_data = input_data.sort_index()
+	
+	# time_deltas are generated specific to this project, which only uses data between Jan 1st, 2011 and Jan 1st, 2016
+	time_deltas = input_data['date_time'] - datetime(2011,1,1) # create Panda Timedelta types
+
+	input_data['time_deltas'] = time_deltas.astype('timedelta64[s]')
+	# print input_data['time_deltas'][0:20]
+
+
+
+if __name__ == "__main__":
+	main()
 
 
 

@@ -24,6 +24,9 @@ def main():
 	input_data['time_deltas'] = time_deltas.astype('timedelta64[s]')
 	# print input_data['time_deltas'][0:20]
 
+	# df.drop(df.columns[[0, 1, 3]], axis=1)
+	drop_cols = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16 ,17, 18, 19, 20, 21, 22]
+
 
 
 if __name__ == "__main__":

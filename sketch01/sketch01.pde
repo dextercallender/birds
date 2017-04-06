@@ -27,7 +27,7 @@ Oscil wave;
 PImage bg;
 
 void setup(){
-  size(1920,1177,P3D);
+  size(1536,768,P3D);
   background(255);
   table = loadTable("bird_sampleset.csv","header, csv");
   rowCount = table.getRowCount();
@@ -55,7 +55,7 @@ void setup(){
   // patch the Oscil to the output
   wave.patch( out );
   
-  bg = loadImage("map2.jpg");
+  bg = loadImage("world-map.jpg");
   
 }
 
@@ -69,10 +69,13 @@ void draw(){
     exit();
   }
   
-  float x = map(latitudes[ex], 36.0, 37.0, 0.0, float(width));   
-  float y = map(longitudes[ex], -122.0, -121.0, 0.0, float(height));
+  //float x = map(latitudes[ex], 36.0, 37.0, 0.0, float(width));   
+  //float y = map(longitudes[ex], -122.0, -121.0, 0.0, float(height));
+  float x = ((float(width)/360.0) * (180 + longitudes[ex]));
+  float y = ((float(height)/180.0) * (90 - latitudes[ex]));
+  
   fill(255,0,0);
-  ellipse( x, y, 30, 30);
+  ellipse( x, y, 12, 12);
   
   ex +=1;
   

@@ -29,7 +29,7 @@ PImage bg;
 void setup(){
   size(1536,768,P3D);
   background(255);
-  table = loadTable("bird_sampleset.csv","header, csv");
+  table = loadTable("ebd_pursan_201101_201601_relFeb-2017.csv","header, csv");
   rowCount = table.getRowCount();
   dates = new String[rowCount];
   times = new String[rowCount];
@@ -81,13 +81,10 @@ void draw(){
   
   wave.setAmplitude(map(x, 0, width, 1, 0) );
   wave.setFrequency(map(y, 0, height, 110, 880) );
-  
 }
 
 float dateTimeToFloat(){
   return 0;
 }
-
-
 
 // calculate the centroid over a set span of time

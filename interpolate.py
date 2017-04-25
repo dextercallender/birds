@@ -14,6 +14,7 @@ def main():
 
 	#change OBSERVATION DATE to date-time-index
 	df['DATETIME'] = pd.to_datetime(df['OBSERVATION DATE'])
+
 	#df['DATETIME'] = pd.DatetimeIndex(df['OBSERVATION DATE'])
 	df = df.set_index(pd.DatetimeIndex(df['DATETIME']))
 	
@@ -21,6 +22,7 @@ def main():
 	df = df.resample('D').mean()
 	df = df.interpolate(method = 'time')
 
+	df['OBSERVATION_DATETIME'] = df.index
 	#readd common name column
 	df['COMMON NAME'] = common_name
 

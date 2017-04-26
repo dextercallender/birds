@@ -6,7 +6,8 @@ def main():
 
 	input_file_name = sys.argv[1]
 	#pass in what you want the new name to be
-	output_file_name = sys.argv[2]
+
+	output_file_name = input_file_name.split('.')[0] + 'final.csv'
 
 	header = ["COMMON NAME", "LATITUDE", "LONGITUDE", "OBSERVATION COUNT","OBSERVATION DATE", "temperature", "time_deltas"]
 	df = pd.read_csv(input_file_name, names = header, skiprows = 1)

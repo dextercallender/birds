@@ -14,7 +14,19 @@ String[] dates;
 String[] times;
 float[] latitudes;
 float[] longitudes;
+float[] temps;
+int[] observation_size;
 int rowCount;
+
+/* for temperature color mapping */
+float minTemp;
+float maxTemp;
+int colMax = 0xffff0000;
+int colMed = 0xff00ff00;
+int colMin = 0xff0000ff;
+int curCol;
+
+PFont f;
 
 // Sonification
 
@@ -29,22 +41,31 @@ PImage bg;
 void setup(){
   size(1536,768,P3D);
   background(255);
-  table = loadTable("ebd_pursan_201101_201601_relFeb-2017.csv","header, csv");
+  table = loadTable("final4.csv","header, csv");
   rowCount = table.getRowCount();
   dates = new String[rowCount];
   times = new String[rowCount];
   latitudes = new float[rowCount];
   longitudes = new float[rowCount];
+  temps = new float[rowCount];
+  observation_size = new int[rowCount];
+  
+  f = createFont("Arial", 16, true);
   
   for(int i=0; i < table.getRowCount(); i++){
     row = table.getRow(i);
     latitudes[i] = row.getFloat("LATITUDE");
     longitudes[i] = row.getFloat("LONGITUDE");
-    dates[i] = row.getString("OBSERVATION DATE");
-    times[i] = row.getString("TIME OBSERVATIONS STARTED");
+    dates[i] = row.getString("OBSERVATION_DATETIME");
+    times[i] = row.getString("time_deltas");
+    temps[i] = row.getFloat("temperature");
+    observation_size[i] = row.getInt("OBSERVATION COUNT");
   } 
   
   minim = new Minim(this);
+  
+  minTemp = min(temps);
+  maxTemp = max(temps);
   
   // use the getLineOut method of the Minim object to get an AudioOutput object
   out = minim.getLineOut();
@@ -69,13 +90,29 @@ void draw(){
     exit();
   }
   
+  textFont(f, 16);
+  
   //float x = map(latitudes[ex], 36.0, 37.0, 0.0, float(width));   
   //float y = map(longitudes[ex], -122.0, -121.0, 0.0, float(height));
   float x = ((float(width)/360.0) * (180 + longitudes[ex]));
   float y = ((float(height)/180.0) * (90 - latitudes[ex]));
+  int size = Math.max(observation_size[ex], 10);
   
-  fill(255,0,0);
-  ellipse( x, y, 12, 12);
+  // temperature mapping for dot color
+  float mappedTemp = map(temps[ex], minTemp, maxTemp, 0, 1);
+  if (mappedTemp == 0) {
+    curCol = 0xff808080;      // grey
+  } else if (mappedTemp < 0.5) {
+    curCol = lerpColor(colMin, colMed, 2*mappedTemp);      // blue to green
+  } else {
+    curCol = lerpColor(colMed, colMax, 2*(mappedTemp-0.5));      // green to red
+  }
+  fill(curCol);
+  ellipse( x, y, size, size);
+
+
+  fill(255, 0,0);
+  text(dates[ex], 25, 25);
   
   ex +=1;
   

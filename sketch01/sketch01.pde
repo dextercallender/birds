@@ -16,6 +16,16 @@ float[] longitudes;
 float[] temperatures;
 int rowCount;
 
+/* for temperature color mapping */
+float minTemp;
+float maxTemp;
+int colMax = 0xffff0000;
+int colMed = 0xff00ff00;
+int colMin = 0xff0000ff;
+int curCol;
+
+PFont f;
+
 // Sonification
 Minim minim;
 AudioOutput out;
@@ -57,7 +67,7 @@ void setup() {
   // create a sine wave Oscil, set to 440 Hz, at 0.5 amplitude
   wave = new Oscil( 440, 0.5f, Waves.SINE );
   // patch the Oscil to the output
-  //wave.patch( out );
+  wave.patch( out );
 
   bg = loadImage("world-map.jpg");
   dayIterator = 0;

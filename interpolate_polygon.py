@@ -15,7 +15,7 @@ def main():
 	output_file_name = sys.argv[3]
 
 
-	header1 = ["COMMON NAME", "LATITUDE", "LONGITUDE", "OBSERVATION COUNT","OBSERVATION DATE", "temperature", "time_deltas"]
+	header1 = [ "LATITUDE", "LONGITUDE", "OBSERVATION COUNT", "temperature", "time_deltas", "OBSERVATION DATE", "COMMON NAME"]
 	fields = ['OBSERVATION COUNT']
 	header2 = ["AVG LAT", "AVG LON", "COMMON NAME", "OBSERVATION COUNT", "OBSERVATION DATE", "TEMPERATURE", "time_deltas", "VERTICES"]
 
@@ -25,9 +25,11 @@ def main():
 	df_poly = df_poly[['OBSERVATION DATE', 'VERTICES']]
 	df_poly = df_poly.set_index(pd.DatetimeIndex(df_poly['OBSERVATION DATE']))
 
+	#df_interpolated.to_csv(output_file_name)
 
 	merge_poly = pd.merge(df_poly, df_interpolated, how = 'outer', left_index = True, right_index = True)
 	merge_poly = merge_poly.drop('OBSERVATION DATE_x', 1)
+	merge_poly=merge_poly.rename(columns = {'OBSERVATION DATE_y':'OBSERVATION DATE'})
 
 
 	bool_list = pd.isnull(merge_poly)

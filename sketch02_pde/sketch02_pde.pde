@@ -6,6 +6,7 @@ import ddf.minim.spi.*;
 import ddf.minim.ugens.*;
 
 Table table;
+Table city_temps;
 TableRow row;
 
 float time = 0.0;
@@ -15,6 +16,7 @@ float[] latitudes;
 float[] longitudes;
 float[] temperatures;
 int rowCount;
+int tempCount;
 
 /* for temperature color mapping */
 float minTemp;
@@ -38,13 +40,28 @@ int traceLength;
 float[] prevLatitudes;
 float[] prevLongitudes;
 color[] prevTemperatures;
-String[] polygons; 
+String[] polygons;
+float[] city_xs;
+float[] city_ys;
+
+float[][] city_temperatures;
+
+/* projecting coordinates into the XY space */
+float getX(int w, float lat) {
+  return ((float(w)/360.0) * (180 + lat));
+}
+float getY(int h, float lon) {
+  return ((float(h)/180.0) * (90 - lon));
+}
 
 void setup() {
-  size(1536, 768, P3D);
+  size(1536, 769, P3D);
   background(255);
-  table = loadTable("white_rumped_sandpiper_pr_temps_nodup_polygon.csv", "header, csv");
+  table = loadTable("purplesandpiper.csv", "header, csv");
+  city_temps = loadTable("city_temps.csv", "header, csv");
+  
   rowCount = table.getRowCount();
+  tempCount = city_temps.getRowCount();
   dates = new String[rowCount];
   latitudes = new float[rowCount];
   longitudes = new float[rowCount];
@@ -54,10 +71,38 @@ void setup() {
   prevLongitudes = new float[traceLength];
   prevTemperatures = new color[traceLength];
   polygons = new String[rowCount];
+  
+  city_temperatures = new float[8][tempCount];
+  
+  //these are hard coded indices
+  //vancouver, anchorage, nyc, albuquerque, mex_city, brasilia, buenos_aires, cape_horn
+  city_xs = new float[8];
+  city_ys = new float[8];
+  float[] city_lats = {49.28, 61.21, 40.7, 35.08, 19.43, -15.79, -34.6, -54.93};
+  float[] city_lons = {-123.12, -149.9, -74.0, -106.6, -99.13, -47.88, -58.38, -67.61};
+  
+  for (int i=0; i < 8; i++) {
+    city_xs[i] = getX(width, city_lats[i]);
+    city_ys[i] = getY(height, city_lons[i]);
+  }
+  
+  // this is fucking terrible
+  for(int j=0; j < tempCount; j++) {
+    row = city_temps.getRow(j);
+    city_temperatures[0][j] = row.getFloat("vancouver");
+    city_temperatures[1][j] = row.getFloat("anchorage");
+    city_temperatures[2][j] = row.getFloat("nyc");
+    city_temperatures[3][j] = row.getFloat("albuquerque");
+    city_temperatures[4][j] = row.getFloat("mexico_city");
+    city_temperatures[5][j] = row.getFloat("brasilia");
+    city_temperatures[6][j] = row.getFloat("buenos_aires");
+    city_temperatures[7][j] = row.getFloat("cape_horn");
+  }
+  
 
   for (int i=0; i < table.getRowCount(); i++) {
     row = table.getRow(i);
-    //dates[i] = row.getString("DATETIME");
+    dates[i] = row.getString("OBSERVATION_DATE");
     latitudes[i] = row.getFloat("AVG LAT");
     longitudes[i] = row.getFloat("AVG LON");
     temperatures[i] = row.getFloat("TEMPERATURE");
@@ -72,14 +117,18 @@ void setup() {
   // patch the Oscil to the output
   //wave.patch( out );
 
-  bg = loadImage("world-map.jpg");
+  bg = loadImage("darkmap.jpg");
   dayIterator = 0;
   frameRate(8);
 }
 
+color temp_to_color(float temp) {
+  return lerpColor( color(155, 222, 232), color(255, 102, 26), temp);
+}
+
 void draw() {
- // background(bg);
-  background(0);
+  background(bg);
+  //background(0);
   stroke(255);
   strokeWeight(2);
   line(0,height/2,width,height/2);
@@ -122,7 +171,28 @@ void draw() {
   // textual information
   fill(255);
   textSize(20);
-  //text(dates[dayIterator], 40, height-70);
+  text(dates[dayIterator], 40, height-70);
+  
+  //draw on these cities
+  //VANCOUVER
+  fill(temp_to_color(city_temperatures[0][dayIterator]));
+  text("VANCOUVER", city_xs[0], city_ys[0]);
+  //ANCHORAGE
+  fill(temp_to_color(city_temperatures[1][dayIterator]));
+  text("ANCHORAGE", city_xs[1], city_ys[1]);
+  fill(temp_to_color(city_temperatures[2][dayIterator]));
+  text("NYC", city_xs[2], city_ys[2]);
+  
+  fill(temp_to_color(city_temperatures[3][dayIterator]));
+  text("ALBUQUERUQE", city_xs[3], city_ys[3]);
+  fill(temp_to_color(city_temperatures[4][dayIterator]));
+  text("MEXICO CITY", city_xs[4], city_ys[4]);
+  fill(temp_to_color(city_temperatures[5][dayIterator]));
+  text("BRASILIA", city_xs[5], city_ys[5]);
+  fill(temp_to_color(city_temperatures[6][dayIterator]));
+  text("BUENOS AIRES", city_xs[6], city_ys[6]);
+  fill(temp_to_color(city_temperatures[7][dayIterator]));
+  text("CAPE HORN", city_xs[7], city_ys[7]);
 
   // past traces
   if ( dayIterator > traceLength ) {

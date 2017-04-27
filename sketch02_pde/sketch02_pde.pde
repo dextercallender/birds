@@ -78,9 +78,13 @@ void setup() {
 }
 
 void draw() {
-  background(bg);
+ // background(bg);
+  background(0);
+  stroke(255);
+  strokeWeight(2);
+  line(0,height/2,width,height/2);
   float amt = (temperatures[dayIterator]-266.09) / (306.85-266.09); // (current_temp - min_temp) / (max_temp - min_temp) 
-  color tempColor = lerpColor(color(255, 102, 26), color(155, 222, 232), amt);
+  color tempColor = lerpColor( color(155, 222, 232), color(255, 102, 26), amt);
 
   if ( dayIterator == rowCount-1 ) {
     exit();
@@ -95,13 +99,14 @@ void draw() {
   ellipse( x, y, 15, 15);
   
   // polygon
+  fill(tempColor);
   String verticesString = polygons[dayIterator];
   float[] vertices = parseVerticesString(verticesString);
   
   fill(255,0,0);
   beginShape();
   for(int i=0;i<vertices.length;i+=2){
-    vertex(((float(width)/360.0) * (180 + vertices[i+1])), ((float(height)/180.0) * (90 - vertices[i])) );
+    vertex(((float(width)/360.0) * (180 + vertices[i+1])), ((float(height)/180.0) * (90 - vertices[i])));
   }
   endShape(CLOSE);
 
@@ -125,7 +130,7 @@ void draw() {
       prevLatitudes[i] = ((float(width)/360.0) * (180 + longitudes[dayIterator - i-1]));
       prevLongitudes[i] = ((float(height)/180.0) * (90 - latitudes[dayIterator - i-1]));
       amt = (temperatures[dayIterator-i-1]-266.09) / (306.85-266.09);
-      prevTemperatures[i] = lerpColor(color(255, 102, 26), color(155, 222, 232), amt);
+      prevTemperatures[i] = lerpColor(color(155, 222, 232), color(255, 102, 26), amt);
     }
     for (int i=0; i<traceLength; i++) {
       

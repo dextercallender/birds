@@ -48,9 +48,7 @@ float[][] city_temperatures;
 
 /* projecting coordinates into the XY space */
 float getX(int w, float lon) {
-  float res = ((float(w)/360.0) * (180 + lon));
-  println("getX: " + str(res));
-  return res;
+  return ((float(w)/360.0) * (180 + lon));
 }
 float getY(int h, float lat) {
   return ((float(h)/180.0) * (90 - lat));
@@ -119,18 +117,17 @@ void setup() {
   // patch the Oscil to the output
   //wave.patch( out );
 
-  bg = loadImage("darkmap.jpg");
   dayIterator = 0;
   frameRate(8);
 }
 
 color temp_to_color(float temp) {
-  return lerpColor( color(155, 222, 232), color(255, 102, 26), temp);
+  float amt = (temp - 266.09) / (306.85 - 266.09);
+  return lerpColor( color(155, 222, 232), color(255, 102, 26), amt);
 }
 
 void draw() {
-  background(bg);
-  //background(0);
+  background(0);
   stroke(255);
   strokeWeight(2);
   line(0,height/2,width,height/2);
@@ -178,6 +175,7 @@ void draw() {
   //draw on these cities
   //VANCOUVER
   textSize(14);
+  println(temp_to_color(city_temperatures[0][dayIterator]));
   fill(temp_to_color(city_temperatures[0][dayIterator]));
   text("VANCOUVER", city_xs[0], city_ys[0]);
   //ANCHORAGE

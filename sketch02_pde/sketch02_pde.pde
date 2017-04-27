@@ -72,16 +72,16 @@ void setup() {
   prevTemperatures = new color[traceLength];
   polygons = new String[rowCount];
   
-  city_temperatures = new float[8][tempCount];
+  city_temperatures = new float[9][tempCount];
   
   //these are hard coded indices
-  //vancouver, anchorage, nyc, albuquerque, mex_city, brasilia, buenos_aires, cape_horn
-  city_xs = new float[8];
-  city_ys = new float[8];
-  float[] city_lats = {49.28, 61.21, 40.7, 35.08, 19.43, -15.79, -34.6, -54.93};
-  float[] city_lons = {-123.12, -149.9, -74.0, -106.6, -99.13, -47.88, -58.38, -67.61};
+  //vancouver, anchorage, nyc, albuquerque, mex_city, brasilia, buenos_aires, cape_horn, reykjavik
+  city_xs = new float[9];
+  city_ys = new float[9];
+  float[] city_lats = {49.28, 61.21, 40.7, 35.08, 19.43, -15.79, -34.6, -54.93, 64.13};
+  float[] city_lons = {-123.12, -149.9, -74.0, -106.6, -99.13, -47.88, -58.38, -67.61, -21.81};
   
-  for (int i=0; i < 8; i++) {
+  for (int i=0; i < 9; i++) {
     city_ys[i] = getY(height, city_lats[i]);
     city_xs[i] = getX(width, city_lons[i]);
   }
@@ -97,6 +97,7 @@ void setup() {
     city_temperatures[5][j] = row.getFloat("brasilia");
     city_temperatures[6][j] = row.getFloat("buenos_aires");
     city_temperatures[7][j] = row.getFloat("cape_horn");
+    city_temperatures[8][j] = row.getFloat("reykjavik");
   }
   
 
@@ -115,10 +116,10 @@ void setup() {
   // create a sine wave Oscil, set to 440 Hz, at 0.5 amplitude
   wave = new Oscil( 440, 0.5f, Waves.SINE );
   // patch the Oscil to the output
-  //wave.patch( out );
+  wave.patch( out );
 
   dayIterator = 0;
-  frameRate(8);
+  frameRate(12);
 }
 
 color temp_to_color(float temp) {
@@ -194,6 +195,8 @@ void draw() {
   text("BUENOS AIRES", city_xs[6], city_ys[6]);
   fill(temp_to_color(city_temperatures[7][dayIterator]));
   text("CAPE HORN", city_xs[7], city_ys[7]);
+  fill(temp_to_color(city_temperatures[8][dayIterator]));
+  text("REYKJAVIK", city_xs[8], city_ys[8]);
 
   // past traces
   if ( dayIterator > traceLength ) {

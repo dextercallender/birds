@@ -32,7 +32,8 @@ PFont f;
 Minim minim;
 AudioOutput out;
 Oscil wave1, wave2, wave3, wave4;
-MoogFilter moog;
+ADSR env;
+Pan pan;
 
 // Visualization
 PImage bg;
@@ -44,6 +45,8 @@ color[] prevTemperatures;
 String[] polygons;
 float[] city_xs;
 float[] city_ys;
+
+float prevX, prevY; //for deriving a velocity parameter
 
 int maxVertices;
 
@@ -60,7 +63,7 @@ float getY(int h, float lat) {
 void setup() {
   size(1536, 769, P3D);
   background(0);
-  table = loadTable("purplesandpiper.csv", "header, csv");
+  table = loadTable("whitesand.csv", "header, csv");
   city_temps = loadTable("city_temps.csv", "header, csv");
   maxVertices = 0;
   
@@ -112,7 +115,11 @@ void setup() {
     longitudes[i] = row.getFloat("AVG LON");
     temperatures[i] = row.getFloat("TEMPERATURE");
     polygons[i] = row.getString("VERTICES");
-  } 
+  }
+  
+  // initialize it this way
+  prevX = ((float(width)/360.0) * (180 + longitudes[0]));
+  prevY = ((float(height)/180.0) * (90 - latitudes[0]));
 
   minim = new Minim(this);
   // use the getLineOut method of the Minim object to get an AudioOutput object
@@ -123,8 +130,14 @@ void setup() {
   wave2 = new Oscil( 880, 0.5f, Waves.SINE );
   wave3 = new Oscil( 1320, 0.5f, Waves.SINE );
   wave4 = new Oscil(1760, 0.5f, Waves.SINE );
+  
+  env = new ADSR( 0.5, 0.5, 0.01, 1, 1 );
+  
+  pan = new Pan(0);
+  wave1.patch(pan);
+  pan.patch(out);
+  //wave1.patch(out);
   // patch the Oscil to the output
-  wave1.patch( out );
 
   dayIterator = 0;
   frameRate(12);
@@ -142,6 +155,8 @@ void draw() {
   stroke(245);
   strokeWeight(1);
   line(-300,height/2,width,height/2); //equator
+  
+  // get color for temperature of bird sighting
   float amt = (temperatures[dayIterator]-250) / (310-250); // (current_temp - min_temp) / (max_temp - min_temp) 
   color tempColor = lerpColor( color(155, 222, 232), color(255, 102, 26), amt);
 
@@ -151,22 +166,31 @@ void draw() {
 
   float x = ((float(width)/360.0) * (180 + longitudes[dayIterator]));
   float y = ((float(height)/180.0) * (90 - latitudes[dayIterator]));
-
+  
+  float dX = x - prevX;
+  float dY = y - prevY;
+  float velocity = max(log(sqrt((dX * dX) + (dY * dY))), 0);
+  //println(velocity);
+  
+ 
   // centroid
   stroke(0);
   fill(255, 0, 0);
   ellipse( x, y, 15, 15);
   
   // polygon
-  fill(tempColor);
+  noStroke();
+  fill(tempColor, 150);
   String verticesString = polygons[dayIterator];
   float[] vertices = parseVerticesString(verticesString);
-  int birdz = vertices.length;
-  println(vertices.length);
+  int num_vertices = vertices.length;
+  println(vertices.length / 2);
   
   beginShape();
   for(int i=0;i<vertices.length;i+=2){
-    vertex(((float(width)/360.0) * (180 + vertices[i+1])), ((float(height)/180.0) * (90 - vertices[i])));
+    float tx = ((float(width)/360.0) * (180 + vertices[i+1]));
+    float ty = (float(height)/180.0) * (90 - vertices[i]);
+    vertex(tx, ty);
   }
   endShape(CLOSE);
 
@@ -176,8 +200,12 @@ void draw() {
   ellipse(x, y, 50, 50);
 
   // sonification
-  wave1.setAmplitude(map(birdz,0, 132,1,0));
-  wave1.setFrequency(map(y,0, height,110,880));
+  wave1.setAmplitude(map(num_vertices,0, 132,1,0));
+  wave1.setFrequency(map(velocity,0, 6,110,880));
+  pan.setPan(map(y, 0, height, -1, 1));
+  
+  //wave1.setAmplitude(map(birdz,0, 132,1,0));
+  //wave1.setFrequency(map(y,0, height,110,880));
 
   // textual information
   fill(255);
@@ -231,9 +259,11 @@ void draw() {
         strokeWeight(2);
         line(prevLatitudes[i], prevLongitudes[i], prevLatitudes[i+1], prevLongitudes[i+1]);
       }
-      
     }
   }
+  
+  prevX = x;
+  prevY = y;
   dayIterator +=1;
   popMatrix();
 }

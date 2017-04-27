@@ -31,7 +31,8 @@ PFont f;
 // Sonification
 Minim minim;
 AudioOutput out;
-Oscil wave;
+Oscil wave1, wave2, wave3, wave4;
+MoogFilter moog;
 
 // Visualization
 PImage bg;
@@ -43,6 +44,8 @@ color[] prevTemperatures;
 String[] polygons;
 float[] city_xs;
 float[] city_ys;
+
+int maxVertices;
 
 float[][] city_temperatures;
 
@@ -56,9 +59,10 @@ float getY(int h, float lat) {
 
 void setup() {
   size(1536, 769, P3D);
-  background(255);
+  background(0);
   table = loadTable("purplesandpiper.csv", "header, csv");
   city_temps = loadTable("city_temps.csv", "header, csv");
+  maxVertices = 0;
   
   rowCount = table.getRowCount();
   tempCount = city_temps.getRowCount();
@@ -113,10 +117,14 @@ void setup() {
   minim = new Minim(this);
   // use the getLineOut method of the Minim object to get an AudioOutput object
   out = minim.getLineOut();
-  // create a sine wave Oscil, set to 440 Hz, at 0.5 amplitude
-  wave = new Oscil( 440, 0.5f, Waves.SINE );
+  
+  // oscillators for first 4 harmonics over 440Hz
+  wave1 = new Oscil( 440, 0.5f, Waves.SINE );
+  wave2 = new Oscil( 880, 0.5f, Waves.SINE );
+  wave3 = new Oscil( 1320, 0.5f, Waves.SINE );
+  wave4 = new Oscil(1760, 0.5f, Waves.SINE );
   // patch the Oscil to the output
-  wave.patch( out );
+  wave1.patch( out );
 
   dayIterator = 0;
   frameRate(12);
@@ -128,11 +136,13 @@ color temp_to_color(float temp) {
 }
 
 void draw() {
+  pushMatrix();
+  translate(300,0);
   background(0);
-  stroke(255);
-  strokeWeight(2);
-  line(0,height/2,width,height/2);
-  float amt = (temperatures[dayIterator]-266.09) / (306.85-266.09); // (current_temp - min_temp) / (max_temp - min_temp) 
+  stroke(245);
+  strokeWeight(1);
+  line(-300,height/2,width,height/2); //equator
+  float amt = (temperatures[dayIterator]-250) / (310-250); // (current_temp - min_temp) / (max_temp - min_temp) 
   color tempColor = lerpColor( color(155, 222, 232), color(255, 102, 26), amt);
 
   if ( dayIterator == rowCount-1 ) {
@@ -151,8 +161,9 @@ void draw() {
   fill(tempColor);
   String verticesString = polygons[dayIterator];
   float[] vertices = parseVerticesString(verticesString);
+  int birdz = vertices.length;
+  println(vertices.length);
   
-  fill(255,0,0);
   beginShape();
   for(int i=0;i<vertices.length;i+=2){
     vertex(((float(width)/360.0) * (180 + vertices[i+1])), ((float(height)/180.0) * (90 - vertices[i])));
@@ -165,8 +176,8 @@ void draw() {
   ellipse(x, y, 50, 50);
 
   // sonification
-  wave.setAmplitude(map(x,0, width,1,0));
-  wave.setFrequency(map(y,0, height,110,880));
+  wave1.setAmplitude(map(birdz,0, 132,1,0));
+  wave1.setFrequency(map(y,0, height,110,880));
 
   // textual information
   fill(255);
@@ -174,17 +185,14 @@ void draw() {
   text(dates[dayIterator], 40, height-70);
   
   //draw on these cities
-  //VANCOUVER
   textSize(14);
-  println(temp_to_color(city_temperatures[0][dayIterator]));
+  //println(temp_to_color(city_temperatures[0][dayIterator]));
   fill(temp_to_color(city_temperatures[0][dayIterator]));
   text("VANCOUVER", city_xs[0], city_ys[0]);
-  //ANCHORAGE
   fill(temp_to_color(city_temperatures[1][dayIterator]));
   text("ANCHORAGE", city_xs[1], city_ys[1]);
   fill(temp_to_color(city_temperatures[2][dayIterator]));
   text("NYC", city_xs[2], city_ys[2]);
-  
   fill(temp_to_color(city_temperatures[3][dayIterator]));
   text("ALBUQUERUQE", city_xs[3], city_ys[3]);
   fill(temp_to_color(city_temperatures[4][dayIterator]));
@@ -227,6 +235,7 @@ void draw() {
     }
   }
   dayIterator +=1;
+  popMatrix();
 }
 
 float[] parseVerticesString(String vertexString){

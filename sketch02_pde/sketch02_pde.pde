@@ -47,11 +47,13 @@ float[] city_ys;
 float[][] city_temperatures;
 
 /* projecting coordinates into the XY space */
-float getX(int w, float lat) {
-  return ((float(w)/360.0) * (180 + lat));
+float getX(int w, float lon) {
+  float res = ((float(w)/360.0) * (180 + lon));
+  println("getX: " + str(res));
+  return res;
 }
-float getY(int h, float lon) {
-  return ((float(h)/180.0) * (90 - lon));
+float getY(int h, float lat) {
+  return ((float(h)/180.0) * (90 - lat));
 }
 
 void setup() {
@@ -82,8 +84,8 @@ void setup() {
   float[] city_lons = {-123.12, -149.9, -74.0, -106.6, -99.13, -47.88, -58.38, -67.61};
   
   for (int i=0; i < 8; i++) {
-    city_xs[i] = getX(width, city_lats[i]);
-    city_ys[i] = getY(height, city_lons[i]);
+    city_ys[i] = getY(height, city_lats[i]);
+    city_xs[i] = getX(width, city_lons[i]);
   }
   
   // this is fucking terrible
@@ -175,6 +177,7 @@ void draw() {
   
   //draw on these cities
   //VANCOUVER
+  textSize(14);
   fill(temp_to_color(city_temperatures[0][dayIterator]));
   text("VANCOUVER", city_xs[0], city_ys[0]);
   //ANCHORAGE
